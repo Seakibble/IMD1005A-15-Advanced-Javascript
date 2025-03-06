@@ -61,6 +61,13 @@ button:hover {
     margin-top: 10px;
 }
 
+.timestamp {
+    color: #555;
+    margin-top: 0.5em;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
 .note button {
     padding: 0;
     width: 2em;
@@ -77,6 +84,10 @@ button:hover {
 .note button:hover {
     color: crimson;
     background-color: white;
+}
+
+.highlight {
+    background-color: #fcf;
 }
 
 @media screen and (width < 700px) {

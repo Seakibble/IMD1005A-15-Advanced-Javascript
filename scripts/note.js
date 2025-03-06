@@ -3,13 +3,15 @@ const $clear = document.getElementById('clear')
 const $add = document.getElementById('add')
 const $search = document.getElementById('search')
 const $notes = document.getElementById('notes')
+const $results = document.getElementById('results')
+
 
 let notesArray = localStorage.getItem('notes')
 if (notesArray == null) {
     notesArray = []
 } else {
     notesArray = JSON.parse(notesArray)
-    displayAllNotes()
+    displayNotes(notesArray)
 }
 
 $clear.addEventListener('click', (event) => {
@@ -29,10 +31,27 @@ if (id == null) {
 $add.addEventListener('click', (event) => {
     event.preventDefault()
 
+    let now = new Date()
+
+    let date = now.getDate() + "/" + (now.getMonth()+1) + "/" + now.getFullYear()
+
+    let hours = now.getHours()
+    let minutes = now.getMinutes()
+
+    if (hours < 10) {
+        hours = "0" + hours
+    }
+    if (minutes < 10) {
+        minutes = "0" + minutes
+    }
+
+    let time = hours + ":" + minutes
+
     let note = {
         id: id,
         title: $form.elements.title.value,
-        text: $form.elements.text.value
+        text: $form.elements.text.value,
+        timestamp: date + " - " + time
     }
     id++
     localStorage.setItem('id', id)
@@ -56,25 +75,63 @@ $notes.addEventListener('click', (event) => {
         })
         notesArray.splice(found, 1)
         saveNotes()
-        displayAllNotes()
+        displayNotes(notesArray)
     }
 })
 
+let timer = null
+$search.addEventListener('keydown', (event) => {
+    if (timer != null) {
+        clearTimeout(timer)
+    }
+    
+    timer = setTimeout(search, 500)
+})
 
-function displayAllNotes() {
+function search() {
+    let query = $search.value.toLowerCase()
+
+    if (query == '') {
+        displayNotes(notesArray)
+        $results.innerText = ''
+        return
+    }
+
+    let matches = []
+    for (let i = 0; i < notesArray.length; i++) {
+        if (notesArray[i].title.toLowerCase().includes(query)) {
+            matches.push(notesArray[i])
+        } else if (notesArray[i].text.toLowerCase().includes(query)) {
+            matches.push(notesArray[i])
+        }
+    }
+    
+    displayNotes(matches, true)
+
+    $results.innerText = "Search results: " + matches.length
+}
+
+
+
+function displayNotes(array, highlight = false) {
     $notes.innerHTML = ''
-    notesArray.forEach(note => {
-        displayNote(note)
+    array.forEach(note => {
+        displayNote(note, highlight)
     })
 }
 
-function displayNote(note) {
+function displayNote(note, highlight = false) {
     let $newNote = document.createElement('div')
     $newNote.classList.add('note')
+
+    if (highlight) {
+        $newNote.classList.add('highlight')
+    }
 
     $newNote.innerHTML = `
     <h2>${note.title}</h2>
     <p>${note.text}</p>
+    <p class="timestamp">${note.timestamp}</p>
     <button data-id="${note.id}">X</button>`
 
     $notes.append($newNote)
